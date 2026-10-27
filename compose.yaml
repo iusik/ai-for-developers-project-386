@@ -1,0 +1,60 @@
+name: callbook
+
+x-node: &node
+  build:
+    context: .
+    dockerfile: docker/dev.Dockerfile
+  image: callbook-dev:local
+  working_dir: /app
+  volumes:
+    - .:/app
+    - pnpm-store:/root/.local/share/pnpm
+  environment:
+    CI: ${CI:-}
+
+services:
+  dev:
+    <<: *node
+    profiles: [tools]
+
+  db:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: callbook
+      POSTGRES_PASSWORD: callbook
+      POSTGRES_DB: callbook
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U callbook -d callbook']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  api:
+    <<: *node
+    command: pnpm --filter @callbook/api dev
+    ports:
+      - '3000:3000'
+    environment:
+      CI: ${CI:-}
+      PORT: '3000'
+      HOST: 0.0.0.0
+      DATABASE_URL: postgres://callbook:callbook@db:5432/callbook
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    <<: *node
+    command: pnpm --filter @callbook/web dev --host 0.0.0.0 --port 5173
+    ports:
+      - '5173:5173'
+    depends_on:
+      - api
+
+volumes:
+  pnpm-store:
+  db-data:

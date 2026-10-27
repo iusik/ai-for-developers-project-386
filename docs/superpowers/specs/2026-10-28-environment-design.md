@@ -20,21 +20,21 @@
 
 ## Стек
 
-| Область | Выбор | Версия |
-|---|---|---|
-| Runtime | Node.js LTS (Krypton) | 24.22.1 |
-| Пакетный менеджер | pnpm (workspaces), через corepack | 12.15.0 |
-| Язык | TypeScript | 6.0.3 |
-| Бэкенд | Fastify (+ TypeBox для валидации — с первой фичей) | 5.x |
-| БД | PostgreSQL | 18.6 (образ `postgres:18.6-alpine`) |
-| ORM / миграции | Drizzle ORM + drizzle-kit (ставим с первой фичей, которой нужна БД) | 0.45.x / 0.31.x |
-| Фронтенд | React + Vite | 19.x / 8.x |
-| Тесты | Vitest + `@vitest/coverage-v8`; Testing Library + jsdom для web | 5.x |
-| Линтер | ESLint (flat config) + typescript-eslint | 10.x / 8.x |
-| Форматтер | Prettier | 3.x |
-| Коммиты | commitlint + `@commitlint/config-conventional` | 21.x |
-| Git-хуки | lefthook (через mise) | 2.2.2 |
-| Оркестрация задач | mise | min_version 2026.10.0 |
+| Область           | Выбор                                                               | Версия                              |
+| ----------------- | ------------------------------------------------------------------- | ----------------------------------- |
+| Runtime           | Node.js LTS (Krypton)                                               | 24.22.1                             |
+| Пакетный менеджер | pnpm (workspaces), через corepack                                   | 12.15.0                             |
+| Язык              | TypeScript                                                          | 6.0.3                               |
+| Бэкенд            | Fastify (+ TypeBox для валидации — с первой фичей)                  | 5.x                                 |
+| БД                | PostgreSQL                                                          | 18.6 (образ `postgres:18.6-alpine`) |
+| ORM / миграции    | Drizzle ORM + drizzle-kit (ставим с первой фичей, которой нужна БД) | 0.45.x / 0.31.x                     |
+| Фронтенд          | React + Vite                                                        | 19.x / 8.x                          |
+| Тесты             | Vitest + `@vitest/coverage-v8`; Testing Library + jsdom для web     | 5.x                                 |
+| Линтер            | ESLint (flat config) + typescript-eslint                            | 10.x / 8.x                          |
+| Форматтер         | Prettier                                                            | 3.x                                 |
+| Коммиты           | commitlint + `@commitlint/config-conventional`                      | 21.x                                |
+| Git-хуки          | lefthook (через mise)                                               | 2.2.2                               |
+| Оркестрация задач | mise                                                                | min_version 2026.10.0               |
 
 TypeScript закреплён на 6.0.x: typescript-eslint 8.x поддерживает `typescript <6.1`, а правила с проверкой типов — ключевая часть линтинга. Переход на TypeScript 7 — отдельная задача, когда появится поддержка в typescript-eslint.
 
@@ -89,14 +89,14 @@ Production-образы не делаем — появятся вместе с �
 
 `mise.toml` фиксирует `min_version` и версию lefthook, а также описывает задачи — единую точку входа:
 
-| Задача | Что делает |
-|---|---|
-| `mise run setup` | собирает образ, `pnpm install --frozen-lockfile` в контейнере, `lefthook install` |
-| `mise run dev` | `docker compose up` — db, api, web |
-| `mise run down` | `docker compose down` |
-| `mise run check` | `pnpm install --frozen-lockfile && pnpm check` в контейнере `dev` |
-| `mise run lint` / `format` / `typecheck` / `test` | соответствующий pnpm-скрипт в контейнере `dev` |
-| `mise run shell` | shell внутри контейнера `dev` |
+| Задача                                            | Что делает                                                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `mise run setup`                                  | собирает образ, `pnpm install --frozen-lockfile` в контейнере, `lefthook install` |
+| `mise run dev`                                    | `docker compose up` — db, api, web                                                |
+| `mise run down`                                   | `docker compose down`                                                             |
+| `mise run check`                                  | `pnpm install --frozen-lockfile && pnpm check` в контейнере `dev`                 |
+| `mise run lint` / `format` / `typecheck` / `test` | соответствующий pnpm-скрипт в контейнере `dev`                                    |
+| `mise run shell`                                  | shell внутри контейнера `dev`                                                     |
 
 ## Guardrails
 
