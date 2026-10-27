@@ -12,9 +12,13 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json && pnpm -r run typecheck",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint:commits": "commitlint --last --verbose",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commits"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "10.0.1",
     "@types/node": "24.19.2",
     "@vitest/coverage-v8": "5.0.5",
