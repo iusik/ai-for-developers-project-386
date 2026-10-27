@@ -23,7 +23,7 @@
 | Область           | Выбор                                                               | Версия                              |
 | ----------------- | ------------------------------------------------------------------- | ----------------------------------- |
 | Runtime           | Node.js LTS (Krypton)                                               | 24.22.1                             |
-| Пакетный менеджер | pnpm (workspaces), через corepack                                   | 12.15.0                             |
+| Пакетный менеджер | pnpm (workspaces), устанавливается в образ через npm                | 12.15.0                             |
 | Язык              | TypeScript                                                          | 6.0.3                               |
 | Бэкенд            | Fastify (+ TypeBox для валидации — с первой фичей)                  | 5.x                                 |
 | БД                | PostgreSQL                                                          | 18.6 (образ `postgres:18.6-alpine`) |
@@ -78,7 +78,7 @@ README.md
 
 **`compose.yaml`:**
 
-- `dev` — образ из `dev.Dockerfile`, исходники смонтированы в `/app`, pnpm store в именованном томе. Служит для разовых команд: `docker compose run --rm dev <команда>`. `node_modules` лежит в смонтированной папке, поэтому IDE на хосте видит типы.
+- `dev` — образ из `dev.Dockerfile`, исходники смонтированы в `/app`, pnpm store лежит внутри `node_modules/.pnpm-store` (pnpm не может хардлинковать через bind mount, поэтому отдельный именованный том под store не нужен). Служит для разовых команд: `docker compose run --rm dev <команда>`. `node_modules` лежит в смонтированной папке, поэтому IDE на хосте видит типы.
 - `db` — `postgres:18.6-alpine`, healthcheck через `pg_isready`, данные в именованном томе.
 - `api` — тот же образ, `pnpm --filter api dev`, порт 3000, зависит от здорового `db`, получает `DATABASE_URL`.
 - `web` — тот же образ, `pnpm --filter web dev --host`, порт 5173.
@@ -89,14 +89,15 @@ Production-образы не делаем — появятся вместе с �
 
 `mise.toml` фиксирует `min_version` и версию lefthook, а также описывает задачи — единую точку входа:
 
-| Задача                                            | Что делает                                                                        |
-| ------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `mise run setup`                                  | собирает образ, `pnpm install --frozen-lockfile` в контейнере, `lefthook install` |
-| `mise run dev`                                    | `docker compose up` — db, api, web                                                |
-| `mise run down`                                   | `docker compose down`                                                             |
-| `mise run check`                                  | `pnpm install --frozen-lockfile && pnpm check` в контейнере `dev`                 |
-| `mise run lint` / `format` / `typecheck` / `test` | соответствующий pnpm-скрипт в контейнере `dev`                                    |
-| `mise run shell`                                  | shell внутри контейнера `dev`                                                     |
+| Задача                                            | Что делает                                                                                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mise run setup`                                  | собирает образ, `pnpm install --frozen-lockfile` в контейнере, `lefthook install`                                                                 |
+| `mise run dev`                                    | `docker compose up` — db, api, web                                                                                                                |
+| `mise run down`                                   | `docker compose down`                                                                                                                             |
+| `mise run check`                                  | `pnpm install --frozen-lockfile && pnpm check` в контейнере `dev`, затем проверка сообщения последнего коммита через `mise run lint:commits`      |
+| `mise run lint:commits`                           | сообщение последнего коммита через stdin в `commitlint` в контейнере `dev` (не зависит от git внутри контейнера — важно для линкованных worktree) |
+| `mise run lint` / `format` / `typecheck` / `test` | соответствующий pnpm-скрипт в контейнере `dev`                                                                                                    |
+| `mise run shell`                                  | shell внутри контейнера `dev`                                                                                                                     |
 
 ## Guardrails
 
@@ -106,7 +107,8 @@ Production-образы не делаем — появятся вместе с �
 2. `lint` — `eslint . --max-warnings=0`
 3. `typecheck` — `tsc --noEmit` в каждом пакете
 4. `test:coverage` — `vitest run --coverage`
-5. `lint:commits` — `commitlint --last`
+
+Проверку формата коммита (`lint:commits`) выполняет отдельно `mise run check` — после шага `pnpm check`, через `git log -1 --format=%B | docker compose run --rm -T dev pnpm exec commitlint --verbose` (сообщение передаётся через stdin, а не через `git` внутри контейнера, чтобы работать и в линкованных worktree).
 
 **ESLint:** `typescript-eslint` `strictTypeChecked` + `stylisticTypeChecked` с `projectService`; для `apps/web` — `eslint-plugin-react-hooks` и `eslint-plugin-react-refresh`; в конце `eslint-config-prettier`.
 
@@ -120,7 +122,7 @@ Production-образы не делаем — появятся вместе с �
 
 **Git-хуки (`lefthook.yml`):**
 
-- `commit-msg` — `docker compose run --rm -T dev pnpm exec commitlint --edit {1}`
+- `commit-msg` — `docker compose run --rm -T dev pnpm exec commitlint < {1}` (сообщение передаётся через stdin, а не через путь к файлу, — в линкованных worktree `{1}` указывает на хостовый путь, недоступный внутри контейнера)
 - `pre-push` — `mise run check`
 
 **Фиксация версий:**
@@ -152,7 +154,7 @@ Production-образы не делаем — появятся вместе с �
 
 ## Известные ограничения
 
-- `lint:commits` в CI проверяет только последний коммит пуша; остальные защищает локальный хук `commit-msg`.
+- `mise run lint:commits` (как шаг `mise run check`) в CI проверяет только последний коммит пуша; остальные защищает локальный хук `commit-msg`.
 - Хук `commit-msg` поднимает контейнер — коммит занимает на 1–2 секунды дольше.
 - На Linux-хосте файлы, созданные в контейнере, могут принадлежать root; на macOS с Docker Desktop проблемы нет. Решаем, если понадобится.
 - Тестам пока не нужна БД; подключение `db` к прогону тестов добавим вместе с первыми интеграционными тестами.

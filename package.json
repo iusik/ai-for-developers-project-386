@@ -13,8 +13,7 @@
     "typecheck": "tsc -p tsconfig.json && pnpm -r run typecheck",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "lint:commits": "commitlint --last --verbose",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commits"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:coverage"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.4",

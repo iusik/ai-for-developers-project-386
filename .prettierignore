@@ -2,3 +2,4 @@ pnpm-lock.yaml
 coverage/
 dist/
 .github/workflows/hexlet-check.yml
+.superpowers/

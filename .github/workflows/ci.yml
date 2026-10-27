@@ -5,11 +5,17 @@ on:
     branches:
       - '**'
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: jdx/mise-action@v5.2.4
         with:
