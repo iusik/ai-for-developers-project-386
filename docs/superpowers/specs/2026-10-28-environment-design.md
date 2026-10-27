@@ -25,9 +25,9 @@
 | Runtime | Node.js LTS (Krypton) | 24.22.1 |
 | Пакетный менеджер | pnpm (workspaces), через corepack | 12.15.0 |
 | Язык | TypeScript | 6.0.3 |
-| Бэкенд | Fastify + TypeBox | 5.x (последняя на момент установки) |
+| Бэкенд | Fastify (+ TypeBox для валидации — с первой фичей) | 5.x |
 | БД | PostgreSQL | 18.6 (образ `postgres:18.6-alpine`) |
-| ORM / миграции | Drizzle ORM + drizzle-kit | 0.45.x / 0.31.x |
+| ORM / миграции | Drizzle ORM + drizzle-kit (ставим с первой фичей, которой нужна БД) | 0.45.x / 0.31.x |
 | Фронтенд | React + Vite | 19.x / 8.x |
 | Тесты | Vitest + `@vitest/coverage-v8`; Testing Library + jsdom для web | 5.x |
 | Линтер | ESLint (flat config) + typescript-eslint | 10.x / 8.x |
@@ -38,13 +38,15 @@
 
 TypeScript закреплён на 6.0.x: typescript-eslint 8.x поддерживает `typescript <6.1`, а правила с проверкой типов — ключевая часть линтинга. Переход на TypeScript 7 — отдельная задача, когда появится поддержка в typescript-eslint.
 
-Точные версии npm-пакетов фиксируются при установке (`save-exact=true`) и в `pnpm-lock.yaml`.
+Точные версии npm-пакетов фиксируются при установке (`saveExact: true` в `pnpm-workspace.yaml`; начиная с pnpm 11 `.npmrc` читается только для auth/registry) и в `pnpm-lock.yaml`.
+
+Drizzle и TypeBox в стеке, но устанавливаются вместе с первым кодом, который их использует: на этапе окружения им нечего делать. Контейнер `db` и `DATABASE_URL` готовы уже сейчас.
 
 ## Структура репозитория
 
 ```
 apps/
-  api/                 — Fastify, Drizzle; каркас: GET /health + тест
+  api/                 — Fastify; каркас: GET /health + тест
   web/                 — React + Vite; каркас: страница-заглушка + тест
 docker/
   dev.Dockerfile       — образ с Node, pnpm, git
@@ -56,8 +58,7 @@ compose.yaml
 mise.toml
 lefthook.yml
 package.json           — корневые скрипты, packageManager, engines
-pnpm-workspace.yaml
-.npmrc                 — save-exact=true, engine-strict=true
+pnpm-workspace.yaml    — пакеты + настройки pnpm (saveExact, engineStrict, allowBuilds)
 tsconfig.base.json
 eslint.config.js
 .prettierrc.json, .prettierignore
@@ -73,7 +74,7 @@ README.md
 
 Всё выполняется в контейнерах; на хосте нужны только Docker и mise.
 
-**`docker/dev.Dockerfile`** — на базе `node:24.22.1-bookworm-slim` (glibc, чтобы нативные бинарники esbuild/rollup работали без сюрпризов). Ставит `git` (нужен commitlint), включает corepack, помечает `/app` как `safe.directory` для git.
+**`docker/dev.Dockerfile`** — на базе `node:24.22.1-bookworm-slim` (glibc, чтобы нативные бинарники esbuild/rolldown работали без сюрпризов). Ставит `git` (нужен commitlint) и `pnpm@12.15.0` через npm, помечает `/app` как `safe.directory` для git.
 
 **`compose.yaml`:**
 
@@ -125,7 +126,7 @@ Production-образы не делаем — появятся вместе с �
 **Фиксация версий:**
 
 - Node — тег образа в `dev.Dockerfile` и `engines.node` в `package.json`;
-- pnpm — `packageManager` в `package.json`;
+- pnpm — `packageManager` в `package.json` и та же версия в `dev.Dockerfile`;
 - npm-зависимости — точные версии и `pnpm-lock.yaml`, в CI `--frozen-lockfile`;
 - PostgreSQL — тег образа в `compose.yaml`;
 - lefthook и минимальная версия mise — `mise.toml`;
