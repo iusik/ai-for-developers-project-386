@@ -24,8 +24,15 @@ description = "Shell внутри контейнера dev"
 run = "docker compose run --rm dev bash"
 
 [tasks.check]
-description = "Все проверки: формат, линтер, типы, тесты с покрытием, коммит"
-run = "docker compose run --rm -T dev sh -c 'pnpm install --frozen-lockfile && pnpm check'"
+description = "Все проверки: формат, линтер, типы, тесты с покрытием, формат коммита"
+run = [
+  "docker compose run --rm -T dev sh -c 'pnpm install --frozen-lockfile && pnpm check'",
+  "git log -1 --format=%B | docker compose run --rm -T dev pnpm exec commitlint --verbose",
+]
+
+[tasks."lint:commits"]
+description = "Проверить сообщение последнего коммита (Conventional Commits)"
+run = "git log -1 --format=%B | docker compose run --rm -T dev pnpm exec commitlint --verbose"
 
 [tasks.lint]
 description = "ESLint"

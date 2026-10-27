@@ -7,7 +7,12 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['**/node_modules/', '**/coverage/', '**/dist/']),
+  globalIgnores([
+    '**/node_modules/',
+    '**/coverage/',
+    '**/dist/',
+    '.superpowers/',
+  ]),
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
