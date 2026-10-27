@@ -1,0 +1,19 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: jdx/mise-action@v5.2.4
+        with:
+          version: 2026.10.21
+
+      - name: Run all checks
+        run: mise run check

@@ -50,18 +50,31 @@
 
 ## Стек
 
-Будет определён в процессе разработки.
+- **Бэкенд:** Node.js 24, Fastify 5, TypeScript, PostgreSQL 18 (Drizzle ORM — с первой фичей, которой нужна БД)
+- **Фронтенд:** React 19, Vite 8
+- **Тесты:** Vitest, Testing Library; порог покрытия 80%
+- **Качество:** ESLint (typescript-eslint strict), Prettier, commitlint (Conventional Commits), lefthook
+- **Окружение:** Docker Compose, mise; pnpm workspaces
 
 ## Установка
+
+Нужны только [Docker](https://www.docker.com/) и [mise](https://mise.jdx.dev).
 
 ```bash
 git clone https://github.com/iusik/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
+mise trust
+mise run setup
 ```
 
 ## Использование
 
-Инструкции по запуску появятся по мере разработки.
+```bash
+mise run dev     # db, api на http://localhost:3000, web на http://localhost:5173
+mise run check   # все проверки: формат, линтер, типы, тесты с покрытием
+```
+
+Остальные команды и правила разработки — в [AGENTS.md](AGENTS.md).
 
 ---
 
