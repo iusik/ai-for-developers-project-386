@@ -1,0 +1,44 @@
+min_version = "2026.10.0"
+
+[tools]
+lefthook = "2.2.2"
+
+[tasks.setup]
+description = "Собрать образ, установить зависимости и git-хуки"
+run = [
+  "docker compose build dev",
+  "docker compose run --rm -T dev pnpm install --frozen-lockfile",
+  "lefthook install",
+]
+
+[tasks.dev]
+description = "Запустить db, api и web"
+run = "docker compose up --build db api web"
+
+[tasks.down]
+description = "Остановить окружение"
+run = "docker compose down"
+
+[tasks.shell]
+description = "Shell внутри контейнера dev"
+run = "docker compose run --rm dev bash"
+
+[tasks.check]
+description = "Все проверки: формат, линтер, типы, тесты с покрытием, коммит"
+run = "docker compose run --rm -T dev sh -c 'pnpm install --frozen-lockfile && pnpm check'"
+
+[tasks.lint]
+description = "ESLint"
+run = "docker compose run --rm -T dev pnpm lint"
+
+[tasks.format]
+description = "Отформатировать код Prettier"
+run = "docker compose run --rm -T dev pnpm format"
+
+[tasks.typecheck]
+description = "Проверка типов TypeScript"
+run = "docker compose run --rm -T dev pnpm typecheck"
+
+[tasks.test]
+description = "Тесты с покрытием"
+run = "docker compose run --rm -T dev pnpm test:coverage"

@@ -24,36 +24,38 @@
 
 ## Карта файлов
 
-| Файл | Ответственность |
-|---|---|
-| `docker/dev.Dockerfile` | образ с Node, pnpm, git |
-| `.dockerignore` | пустой контекст сборки |
-| `compose.yaml` | сервисы `dev`, `db`, `api`, `web` |
-| `mise.toml` | версия lefthook, min_version, задачи |
-| `package.json` | корневые скрипты, devDependencies, `packageManager`, `engines` |
-| `pnpm-workspace.yaml` | пакеты `apps/*`, настройки pnpm |
-| `.gitignore` | `node_modules`, `coverage`, `dist`, `.env` |
-| `.prettierrc.json`, `.prettierignore` | форматирование |
-| `tsconfig.base.json` | общие строгие опции TS |
-| `tsconfig.json` | typecheck корневых `*.ts`-конфигов |
-| `eslint.config.js` | правила линтера для всего репозитория |
-| `vitest.config.ts` | projects + покрытие с порогами |
-| `apps/api/*` | Fastify-каркас: `buildApp()`, `server.ts`, тест `/health` |
-| `apps/web/*` | React-каркас: `App`, `main.tsx`, тест |
-| `commitlint.config.js` | пресет conventional |
-| `lefthook.yml` | хуки `commit-msg`, `pre-push` |
-| `.github/workflows/ci.yml` | CI |
-| `AGENTS.md`, `README.md` | документация команд и правил |
+| Файл                                  | Ответственность                                                |
+| ------------------------------------- | -------------------------------------------------------------- |
+| `docker/dev.Dockerfile`               | образ с Node, pnpm, git                                        |
+| `.dockerignore`                       | пустой контекст сборки                                         |
+| `compose.yaml`                        | сервисы `dev`, `db`, `api`, `web`                              |
+| `mise.toml`                           | версия lefthook, min_version, задачи                           |
+| `package.json`                        | корневые скрипты, devDependencies, `packageManager`, `engines` |
+| `pnpm-workspace.yaml`                 | пакеты `apps/*`, настройки pnpm                                |
+| `.gitignore`                          | `node_modules`, `coverage`, `dist`, `.env`                     |
+| `.prettierrc.json`, `.prettierignore` | форматирование                                                 |
+| `tsconfig.base.json`                  | общие строгие опции TS                                         |
+| `tsconfig.json`                       | typecheck корневых `*.ts`-конфигов                             |
+| `eslint.config.js`                    | правила линтера для всего репозитория                          |
+| `vitest.config.ts`                    | projects + покрытие с порогами                                 |
+| `apps/api/*`                          | Fastify-каркас: `buildApp()`, `server.ts`, тест `/health`      |
+| `apps/web/*`                          | React-каркас: `App`, `main.tsx`, тест                          |
+| `commitlint.config.js`                | пресет conventional                                            |
+| `lefthook.yml`                        | хуки `commit-msg`, `pre-push`                                  |
+| `.github/workflows/ci.yml`            | CI                                                             |
+| `AGENTS.md`, `README.md`              | документация команд и правил                                   |
 
 ---
 
 ### Task 1: Docker-образ, compose, mise и корневой pnpm-проект с Prettier
 
 **Files:**
+
 - Create: `docker/dev.Dockerfile`, `.dockerignore`, `compose.yaml`, `mise.toml`, `package.json`, `pnpm-workspace.yaml`, `.gitignore`, `.prettierrc.json`, `.prettierignore`
 - Modify: `README.md`, `docs/**` (только форматирование Prettier)
 
 **Interfaces:**
+
 - Produces: образ `callbook-dev:local`; сервис `dev` (команды: `docker compose run --rm -T dev <cmd>`); задачи mise `setup`, `dev`, `down`, `shell`, `check`, `lint`, `format`, `typecheck`, `test`; pnpm-скрипты `format`, `format:check`.
 
 - [ ] **Step 1: Проверить, что mise установлен**
@@ -258,10 +260,12 @@ dist/
 - [ ] **Step 10: Собрать образ и установить Prettier**
 
 Run:
+
 ```bash
 docker compose build dev
 docker compose run --rm -T dev pnpm add -D -w prettier@3.9.10
 ```
+
 Expected: появились `node_modules/`, `pnpm-lock.yaml`, в `package.json` — `"prettier": "3.9.10"` (без `^`). Если pnpm падает с `ERR_PNPM_IGNORED_BUILDS` — добавить в `pnpm-workspace.yaml` блок `allowBuilds:` с перечисленными в ошибке пакетами (`<имя>: true`) и повторить.
 
 - [ ] **Step 11: Отформатировать репозиторий и проверить формат**
@@ -286,11 +290,13 @@ git commit -m "chore: add docker, mise and prettier setup" -m "Co-Authored-By: C
 ### Task 2: TypeScript, ESLint, Vitest и каркас API
 
 **Files:**
+
 - Create: `tsconfig.base.json`, `tsconfig.json`, `eslint.config.js`, `vitest.config.ts`, `apps/api/package.json`, `apps/api/tsconfig.json`, `apps/api/vitest.config.ts`, `apps/api/src/app.ts`, `apps/api/src/server.ts`
 - Test: `apps/api/src/app.test.ts`
 - Modify: `package.json` (scripts + devDependencies)
 
 **Interfaces:**
+
 - Consumes: сервис `dev`, pnpm-скрипты `format`, `format:check` (Task 1).
 - Produces: `buildApp(options?: FastifyServerOptions): FastifyInstance` в `apps/api/src/app.ts`; pnpm-скрипты `lint`, `typecheck`, `test`, `test:coverage`; корневой `vitest.config.ts` с `projects: ['apps/*']`; пакет `@callbook/api` со скриптами `dev`, `typecheck`.
 
@@ -374,11 +380,13 @@ export default defineProject({
 - [ ] **Step 4: Установить зависимости**
 
 Run:
+
 ```bash
 docker compose run --rm -T dev pnpm add -D -w typescript@6.0.3 @types/node@24.19.2 eslint@10.13.0 @eslint/js@10.0.1 typescript-eslint@8.72.1 eslint-config-prettier@10.1.8 globals@17.13.0 vitest@5.0.5 @vitest/coverage-v8@5.0.5
 docker compose run --rm -T dev pnpm --filter @callbook/api add fastify@5.12.7
 docker compose run --rm -T dev pnpm --filter @callbook/api add -D tsx@4.23.15
 ```
+
 Expected: все версии в `package.json` без `^`. При `ERR_PNPM_IGNORED_BUILDS` — дополнить `allowBuilds` в `pnpm-workspace.yaml` (например, `esbuild: true`).
 
 - [ ] **Step 5: Создать корневой `vitest.config.ts`**
@@ -543,11 +551,13 @@ git commit -m "chore: add typescript, eslint, vitest and api skeleton" -m "Co-Au
 ### Task 3: Каркас web (React + Vite) с тестом
 
 **Files:**
+
 - Create: `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/vite.config.ts`, `apps/web/index.html`, `apps/web/src/App.tsx`, `apps/web/src/main.tsx`, `apps/web/src/test/setup.ts`
 - Test: `apps/web/src/App.test.tsx`
 - Modify: `eslint.config.js`
 
 **Interfaces:**
+
 - Consumes: корневые `vitest.config.ts` (`projects: ['apps/*']`, исключения `apps/web/src/main.tsx`, `apps/web/src/test/**`), `tsconfig.base.json`, `eslint.config.js` (Task 2).
 - Produces: компонент `App(): JSX.Element` в `apps/web/src/App.tsx`; пакет `@callbook/web` со скриптами `dev`, `typecheck`.
 
@@ -568,11 +578,13 @@ git commit -m "chore: add typescript, eslint, vitest and api skeleton" -m "Co-Au
 - [ ] **Step 2: Установить зависимости**
 
 Run:
+
 ```bash
 docker compose run --rm -T dev pnpm --filter @callbook/web add react@19.3.1 react-dom@19.3.1
 docker compose run --rm -T dev pnpm --filter @callbook/web add -D vite@8.3.5 @vitejs/plugin-react@6.1.2 @types/react@19.3.0 @types/react-dom@19.3.0 jsdom@30.1.3 @testing-library/react@16.3.3 @testing-library/dom@10.4.2 @testing-library/jest-dom@7.0.1
 docker compose run --rm -T dev pnpm add -D -w eslint-plugin-react-hooks@7.1.1 eslint-plugin-react-refresh@0.5.7
 ```
+
 Expected: точные версии. Проверить, что у `@testing-library/jest-dom@7` есть точка входа `@testing-library/jest-dom/vitest` (`ls node_modules/@testing-library/jest-dom/vitest*` внутри контейнера или поле `exports` в его `package.json`).
 
 - [ ] **Step 3: Создать `apps/web/tsconfig.json`**
@@ -751,10 +763,12 @@ git commit -m "chore: add react web skeleton" -m "Co-Authored-By: Claude Opus 5.
 ### Task 4: commitlint, единая команда `check` и git-хуки
 
 **Files:**
+
 - Create: `commitlint.config.js`, `lefthook.yml`
 - Modify: `package.json` (scripts `lint:commits`, `check`)
 
 **Interfaces:**
+
 - Consumes: pnpm-скрипты `format:check`, `lint`, `typecheck`, `test:coverage` (Tasks 1–3); задача mise `check` (Task 1).
 - Produces: pnpm-скрипты `lint:commits`, `check`; хуки `commit-msg`, `pre-push`.
 
@@ -829,17 +843,21 @@ Expected: FAIL — `ERROR: Coverage for lines (…%) does not meet global thresh
 - [ ] **Step 8: Отформатировать и закоммитить — хук `commit-msg` должен отработать**
 
 Сначала проверить отказ:
+
 ```bash
 docker compose run --rm -T dev pnpm format
 git add commitlint.config.js lefthook.yml package.json pnpm-lock.yaml
 git commit -m "Add commitlint"
 ```
+
 Expected: коммит отклонён хуком commitlint.
 
 Затем:
+
 ```bash
 git commit -m "chore: add commitlint, check script and git hooks" -m "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 ```
+
 Expected: коммит создан.
 
 - [ ] **Step 9: Полный прогон**
@@ -852,10 +870,12 @@ Expected: все пять шагов PASS, последний — `commitlint` �
 ### Task 5: CI, AGENTS.md и README
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`, `AGENTS.md`
 - Modify: `README.md` (разделы «Стек», «Установка», «Использование»)
 
 **Interfaces:**
+
 - Consumes: задачи mise `setup`, `dev`, `down`, `check`, `lint`, `format`, `typecheck`, `test`, `shell` (Task 1); хуки (Task 4).
 - Produces: workflow `ci` на каждый push.
 
@@ -896,17 +916,17 @@ jobs:
 
 ## Команды
 
-| Команда | Что делает |
-|---|---|
-| `mise run setup` | собрать образ, установить зависимости, установить git-хуки |
-| `mise run dev` | запустить db (5432), api (http://localhost:3000), web (http://localhost:5173) |
-| `mise run down` | остановить окружение |
-| `mise run check` | **все проверки**: формат, линтер, типы, тесты с покрытием, формат коммита |
-| `mise run lint` | ESLint |
-| `mise run format` | Prettier (исправляет файлы) |
-| `mise run typecheck` | TypeScript |
-| `mise run test` | Vitest с покрытием |
-| `mise run shell` | shell в контейнере `dev` |
+| Команда              | Что делает                                                                    |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `mise run setup`     | собрать образ, установить зависимости, установить git-хуки                    |
+| `mise run dev`       | запустить db (5432), api (http://localhost:3000), web (http://localhost:5173) |
+| `mise run down`      | остановить окружение                                                          |
+| `mise run check`     | **все проверки**: формат, линтер, типы, тесты с покрытием, формат коммита     |
+| `mise run lint`      | ESLint                                                                        |
+| `mise run format`    | Prettier (исправляет файлы)                                                   |
+| `mise run typecheck` | TypeScript                                                                    |
+| `mise run test`      | Vitest с покрытием                                                            |
+| `mise run shell`     | shell в контейнере `dev`                                                      |
 
 Разовая команда в контейнере: `docker compose run --rm -T dev <команда>`, например `docker compose run --rm -T dev pnpm --filter @callbook/api add <пакет>@<версия>`.
 
