@@ -53,3 +53,17 @@ test(api): cover double booking
 chore: bump vitest to 5.0.6
 ci: cache docker layers
 ```
+
+## Agent skills
+
+### Issue tracker
+
+Задачи ведутся в GitHub Issues репозитория `iusik/ai-for-developers-project-386` через `gh`. См. `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Стандартные метки: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. См. `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: один `GLOSSARY.md` и `docs/adr/` в корне репозитория. См. `docs/agents/domain.md`.
